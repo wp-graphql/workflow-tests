@@ -92,6 +92,31 @@ jobs:
           NEW_VERSION=$(grep -oP "define\('AUTOMATION_TESTS_VERSION', '\K[^']+" constants.php)
           echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
           
+      - name: Update @since tags
+        id: update_since_tags
+        run: |
+          # Run the since-tags update script with the new version
+          npm run since-tags:update -- ${{ steps.version_bump.outputs.version }}
+          
+          # Check if summary file exists and has content
+          if [ -f "/tmp/since-tags-summary.md" ]; then
+            # Read the summary file
+            SINCE_SUMMARY=$(cat /tmp/since-tags-summary.md)
+            
+            # Properly escape the content for GitHub Actions
+            SINCE_SUMMARY="${SINCE_SUMMARY//'%'/'%25'}"
+            SINCE_SUMMARY="${SINCE_SUMMARY//$'\n'/'%0A'}"
+            SINCE_SUMMARY="${SINCE_SUMMARY//$'\r'/'%0D'}"
+            
+            # Set the output
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "summary<<EOF" >> $GITHUB_OUTPUT
+            echo "$SINCE_SUMMARY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+          
       - name: Update changelogs
         run: |
           # First, check if this is a breaking change release by using our new script
@@ -123,6 +148,12 @@ jobs:
             # Generate release notes in markdown format for release body
             # Skip the npm command output by redirecting stderr to /dev/null and grep out the command line
             npm run release:notes 2>/dev/null | grep -v "^>" > /tmp/release-notes/release_notes.md
+          fi
+          
+          # Check if we have @since tag updates to append
+          if [[ "${{ steps.update_since_tags.outputs.has_updates }}" == "true" ]]; then
+            echo "" >> /tmp/release-notes/release_notes.md
+            echo "${{ steps.update_since_tags.outputs.summary }}" >> /tmp/release-notes/release_notes.md
           fi
           
           # Check if the file has content

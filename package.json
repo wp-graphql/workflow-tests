@@ -36,7 +36,7 @@
   "homepage": "https://github.com/jasonbahl/automation-tests#readme",
   "devDependencies": {
     "archiver": "^5.3.1",
-    "chalk": "^5.3.0",
+    "chalk": "^4.1.2",
     "dotenv": "^16.4.7",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.3",
