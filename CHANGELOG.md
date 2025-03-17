@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.1.0 - 2025-03-17
+
+### New Features
+
+- feat: new feature 1 ([#2](https://github.com/jasonbahl/automation-tests/pull/2))
+
 ## v4.0.2 - 2025-03-13
 
 ### Other Changes
