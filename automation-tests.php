@@ -72,4 +72,5 @@ function test_since_next_version_again_4() {
   _deprecated_function( 'test_since_next_version_again_4', '5.1.0', '' )
 }
 
+// feat: replace @next-version test
 
