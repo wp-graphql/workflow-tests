@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v5.2.0 - 2025-03-18
+
+### New Features
+
+- feat: replace next-version tag ([#25](https://github.com/jasonbahl/automation-tests/pull/25))
+
+### Other Changes
+
+- chore: removed unneeded comment ([#23](https://github.com/jasonbahl/automation-tests/pull/23))
+
 ## v5.1.1 - 2025-03-18
 
 ### Other Changes

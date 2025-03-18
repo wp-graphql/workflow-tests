@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Automation Tests
- * Description: A plugin to test automation workflows. Updating description in 5.1.1
- * Version: 5.1.1
+ * Description: A plugin to test automation workflows. 
+ * Version: 5.2.0
  * Author: Jason Bahl
  * Tested up to: 6.2
  */
@@ -72,4 +72,5 @@ function test_since_next_version_again_4() {
   _deprecated_function( 'test_since_next_version_again_4', '5.1.0', '' )
 }
 
+// feat: replace 5.2.0 test
 
