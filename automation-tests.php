@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Automation Tests
  * Description: A plugin to test automation workflows.
- * Version: 4.4.0
+ * Version: 5.0.0
  * Author: Jason Bahl
  */
 
@@ -47,4 +47,14 @@ function test_since_next_version_again() {
  */
 function test_since_next_version_again_2() {
   _deprecated_function( 'test_since_next_version_again_2', '4.4.0', '' )
+}
+
+/**
+ * Testing a new feature with a since tag
+ * 
+ * @since 5.0.0
+ * @deprecated 5.0.0 This function was deprecated when it was added because it was just a test.
+ */
+function test_since_next_version_again_3() {
+  _deprecated_function( 'test_since_next_version_again_2', '5.0.0', '' )
 }
