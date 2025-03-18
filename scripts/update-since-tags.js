@@ -41,9 +41,14 @@ async function findSinceTodoFiles(pattern = 'src/**/*.php') {
  * Get all @since placeholders from a file
  */
 function getSincePlaceholders(content) {
-    const regex = /@since\s+(todo|next-version|tbd)|@next-version/gi;
-    const matches = content.match(regex);
-    return matches ? matches.length : 0;
+    // Look for both @since placeholders and standalone @next-version
+    const sinceRegex = /@since\s+(todo|next-version|tbd)/gi;
+    const nextVersionRegex = /@next-version/gi;
+    
+    const sinceMatches = content.match(sinceRegex) || [];
+    const nextVersionMatches = content.match(nextVersionRegex) || [];
+    
+    return sinceMatches.length + nextVersionMatches.length;
 }
 
 /**
@@ -59,9 +64,16 @@ function updateSinceTags(filePath, version) {
             return { updated: false, count: 0 };
         }
 
+        // First replace @since placeholders
         content = content.replace(
-            /@since\s+(todo|tbd|next-version)|@next-version/gi,
+            /@since\s+(todo|tbd|next-version)/gi,
             `@since ${version}`
+        );
+
+        // Then replace all standalone @next-version occurrences
+        content = content.replace(
+            /@next-version/gi,
+            version
         );
 
         if (content !== originalContent) {
