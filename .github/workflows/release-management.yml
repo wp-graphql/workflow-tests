@@ -103,12 +103,10 @@ jobs:
             # Read the summary file
             SINCE_SUMMARY=$(cat /tmp/since-tags-summary.md)
             
-            # Properly escape the content for GitHub Actions
-            SINCE_SUMMARY="${SINCE_SUMMARY//'%'/'%25'}"
-            SINCE_SUMMARY="${SINCE_SUMMARY//$'\n'/'%0A'}"
-            SINCE_SUMMARY="${SINCE_SUMMARY//$'\r'/'%0D'}"
+            # Replace @ with ` to prevent GitHub from interpreting as user mentions
+            SINCE_SUMMARY=$(echo "$SINCE_SUMMARY" | sed 's/@since/`@since`/g')
             
-            # Set the output
+            # Set the output without any encoding (we'll handle that in the release notes step)
             echo "has_updates=true" >> $GITHUB_OUTPUT
             echo "summary<<EOF" >> $GITHUB_OUTPUT
             echo "$SINCE_SUMMARY" >> $GITHUB_OUTPUT
@@ -177,9 +175,13 @@ jobs:
           # Set the content for GitHub Actions output
           # Properly escape the content for GitHub Actions
           RELEASE_NOTES=$(cat /tmp/release-notes/release_notes.md)
+          
+          # First escape GitHub Actions special characters
           RELEASE_NOTES="${RELEASE_NOTES//'%'/'%25'}"
-          RELEASE_NOTES="${RELEASE_NOTES//$'\n'/'%0A'}"
           RELEASE_NOTES="${RELEASE_NOTES//$'\r'/'%0D'}"
+          
+          # Then handle newlines last to prevent double-escaping
+          RELEASE_NOTES="${RELEASE_NOTES//$'\n'/'%0A'}"
           
           echo "content<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
