@@ -6,7 +6,7 @@
 **Bump Type:** minor
 
 ### ✨ New Features
-- feat: test  tag updates ([#4](https://github.com/wp-graphql/workflow-tests/pull/4))
+- feat: test since tags again ([#7](https://github.com/wp-graphql/workflow-tests/pull/7))
 
 ### 👏 Contributors
 
