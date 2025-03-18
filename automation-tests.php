@@ -6,6 +6,9 @@
  * Author: Jason Bahl
  */
 
+/**
+ * Added a missing docblock in @next-version
+ */ 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
