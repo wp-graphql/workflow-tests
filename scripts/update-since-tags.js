@@ -6,7 +6,7 @@ const chalk = require('chalk');
 /**
  * Find files containing @since todo tags
  */
-async function findSinceTodoFiles(pattern = 'src/**/*.php') {
+async function findSinceTodoFiles(pattern) {
     try {
         console.log(chalk.blue('\nScanning for @since placeholder tags...'));
         console.log(chalk.gray('Looking for files matching pattern:', pattern));
@@ -26,7 +26,8 @@ async function findSinceTodoFiles(pattern = 'src/**/*.php') {
                 'docs/**'
             ],
             dot: false,
-            cwd: process.cwd()
+            cwd: process.cwd(),
+            absolute: true // Get absolute paths
         });
 
         console.log(chalk.gray(`Found ${files.length} PHP files to scan`));
@@ -107,6 +108,7 @@ async function updateAllSinceTags(version, pattern = '**/*.php') {
         }
 
         const files = await findSinceTodoFiles(pattern);
+        console.log(chalk.gray('Files to process:', files));
 
         for (const file of files) {
             try {
@@ -134,19 +136,22 @@ function generateReleaseNotesSummary(results) {
         return '';
     }
 
-    let summary = '### Since Tag Updates\n\n';
-    summary += `Updated ${results.totalUpdated} \`@since\` placeholder`;
+    let summary = '### `@since` / deprecated version placeholder replacement\n\n';
+    summary += `Updated ${results.totalUpdated} \`@since\` or deprecated version placeholder`;
     summary += results.totalUpdated === 1 ? '' : 's';
     summary += ' in the following files:\n\n';
 
     results.updated.forEach(({ file, count }) => {
-        summary += `- \`${file}\` (${count} update${count === 1 ? '' : 's'})\n`;
+        // Get the relative path from the project root
+        const relativePath = path.relative(process.cwd(), file);
+        summary += `- \`${relativePath}\` (${count} update${count === 1 ? '' : 's'})\n`;
     });
 
     if (results.errors.length > 0) {
         summary += '\n#### Errors\n\n';
         results.errors.forEach(({ file, error }) => {
-            summary += `- Failed to update \`${file}\`: ${error}\n`;
+            const relativePath = path.relative(process.cwd(), file);
+            summary += `- Failed to update \`${relativePath}\`: ${error}\n`;
         });
     }
 

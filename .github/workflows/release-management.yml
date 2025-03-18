@@ -103,8 +103,7 @@ jobs:
             # Read the summary file
             SINCE_SUMMARY=$(cat /tmp/since-tags-summary.md)
             
-            # Replace @ with ` to prevent GitHub from interpreting as user mentions
-            SINCE_SUMMARY=$(echo "$SINCE_SUMMARY" | sed 's/@since/`@since`/g')
+            # No need to modify the summary here as it's already properly formatted from the script
             
             # Set the output without any encoding (we'll handle that in the release notes step)
             echo "has_updates=true" >> $GITHUB_OUTPUT
