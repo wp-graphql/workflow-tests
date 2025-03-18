@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Automation Tests
- * Description: A plugin to test automation workflows. Updating description in @next-version
- * Version: 5.1.0
+ * Description: A plugin to test automation workflows. Updating description in 5.1.1
+ * Version: 5.1.1
  * Author: Jason Bahl
  * Tested up to: 6.2
  */

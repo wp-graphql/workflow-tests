@@ -149,8 +149,10 @@ jobs:
           
           # Add @since updates section if there are any
           if [[ "${{ steps.update_since_tags.outputs.has_updates }}" == "true" ]]; then
+            # Store the summary in a variable with proper quoting
+            SINCE_SUMMARY='${{ steps.update_since_tags.outputs.summary }}'
             RELEASE_NOTES="${RELEASE_NOTES}"$'\n\n'
-            RELEASE_NOTES="${RELEASE_NOTES}${{ steps.update_since_tags.outputs.summary }}"
+            RELEASE_NOTES="${RELEASE_NOTES}${SINCE_SUMMARY}"
           fi
           
           # If no content was added, provide default message
@@ -170,11 +172,11 @@ jobs:
           fi
           
           # Save the release notes to a file
-          echo "$RELEASE_NOTES" > $GITHUB_WORKSPACE/release_notes.md
+          echo "$RELEASE_NOTES" > "$GITHUB_WORKSPACE/release_notes.md"
           
           # For debugging
           echo "Generated release notes:"
-          cat $GITHUB_WORKSPACE/release_notes.md
+          cat "$GITHUB_WORKSPACE/release_notes.md"
           
           # Set the content for GitHub Actions output using jq to properly escape the content
           echo "content=$(echo "$RELEASE_NOTES" | jq -Rsa .)" >> $GITHUB_OUTPUT

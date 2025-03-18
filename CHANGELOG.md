@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v5.1.1 - 2025-03-18
+
+### Other Changes
+
+- chore: update tested up to header ([#21](https://github.com/jasonbahl/automation-tests/pull/21))
+- chore: update description ([#19](https://github.com/jasonbahl/automation-tests/pull/19))
+
 ## v5.1.0 - 2025-03-18
 
 ### New Features
