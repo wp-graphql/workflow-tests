@@ -182,8 +182,10 @@ jobs:
           
           # Add @since updates section if there are any
           if [[ "${{ steps.check_since.outputs.has_updates }}" == "true" ]]; then
+            # Read the summary from the previous step's output
+            SINCE_SUMMARY='${{ steps.check_since.outputs.summary }}'
             PR_BODY="${PR_BODY}"$'\n\n'
-            PR_BODY="${PR_BODY}${{ steps.check_since.outputs.summary }}"
+            PR_BODY="${PR_BODY}${SINCE_SUMMARY}"
           fi
           
           PR_BODY="${PR_BODY}"$'\n\n'
@@ -220,8 +222,10 @@ jobs:
           
           # Add @since updates section if there are any
           if [[ "${{ steps.check_since.outputs.has_updates }}" == "true" ]]; then
+            # Read the summary from the previous step's output
+            SINCE_SUMMARY='${{ steps.check_since.outputs.summary }}'
             PR_BODY="${PR_BODY}"$'\n\n'
-            PR_BODY="${PR_BODY}${{ steps.check_since.outputs.summary }}"
+            PR_BODY="${PR_BODY}${SINCE_SUMMARY}"
           fi
           
           PR_BODY="${PR_BODY}"$'\n\n'
