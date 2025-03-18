@@ -6,32 +6,60 @@ const chalk = require('chalk');
 /**
  * Find files containing @since todo tags
  */
-async function findSinceTodoFiles(pattern) {
+async function findSinceTodoFiles(pattern = '**/*.php') {
     try {
         console.log(chalk.blue('\nScanning for @since placeholder tags...'));
-        console.log(chalk.gray('Looking for files matching pattern:', pattern));
+        
+        // Define specific directories to scan
+        const includePaths = [
+            '*.php',           // Root PHP files
+            'src/**/*.php',    // All PHP files in src directory
+            'tests/**/*.php'   // All PHP files in tests directory
+        ];
 
-        const files = glob.sync(pattern, {
-            ignore: [
-                'node_modules/**',
-                'vendor/**',
-                'phpcs/**',
-                '.github/**',
-                '.wordpress-org/**',
-                'bin/**',
-                'build/**',
-                'docker/**',
-                'img/**',
-                'phpstan/**',
-                'docs/**'
-            ],
-            dot: false,
-            cwd: process.cwd(),
-            absolute: true // Get absolute paths
-        });
+        // Define directories to always ignore
+        const ignorePaths = [
+            'vendor/**',           // Third-party dependencies
+            'node_modules/**',     // NPM dependencies
+            'wp-content/**',       // WordPress content directory
+            '.wordpress-org/**',   // WordPress.org assets
+            '.git/**',            // Git directory
+            '.github/**',         // GitHub specific files
+            'bin/**',             // Binary files
+            'build/**',           // Build artifacts
+            'dist/**',            // Distribution files
+            'assets/**',          // Asset files
+            'docs/**',            // Documentation
+            'languages/**',       // Translation files
+            'logs/**',            // Log files
+            'temp/**',            // Temporary files
+            'tmp/**',             // Temporary files
+            'cache/**'            // Cache files
+        ];
 
-        console.log(chalk.gray(`Found ${files.length} PHP files to scan`));
-        return files || [];
+        console.log(chalk.gray('Scanning directories:', includePaths.join(', ')));
+        console.log(chalk.gray('Ignoring directories:', ignorePaths.join(', ')));
+
+        // Get files from each include path
+        const allFiles = [];
+        for (const includePath of includePaths) {
+            const files = glob.sync(includePath, {
+                ignore: ignorePaths,
+                dot: false,
+                cwd: process.cwd(),
+                nodir: true, // Don't include directories in the results
+                absolute: false // Get relative paths initially
+            });
+            allFiles.push(...files);
+        }
+
+        // Remove duplicates and convert to absolute paths
+        const uniqueFiles = [...new Set(allFiles)].map(file => path.resolve(process.cwd(), file));
+        
+        console.log(chalk.gray(`Found ${uniqueFiles.length} PHP files to scan`));
+        console.log(chalk.gray('Files found:', uniqueFiles));
+        
+        return uniqueFiles;
     } catch (error) {
         console.error(chalk.red('Error finding files:', error.message));
         return [];
@@ -108,16 +136,21 @@ async function updateAllSinceTags(version, pattern = '**/*.php') {
         }
 
         const files = await findSinceTodoFiles(pattern);
-        console.log(chalk.gray('Files to process:', files));
+        
+        // Debug logging
+        console.log(chalk.blue('\nProcessing files:'));
+        console.log(files);
 
         for (const file of files) {
             try {
                 const { updated, count } = updateSinceTags(file, version);
                 if (updated) {
+                    console.log(chalk.gray(`File updated: ${file} (${count} updates)`));
                     results.updated.push({ file, count });
                     results.totalUpdated += count;
                 }
             } catch (error) {
+                console.error(chalk.red(`Error updating ${file}:`, error.message));
                 results.errors.push({ file, error: error.message });
             }
         }
@@ -136,14 +169,20 @@ function generateReleaseNotesSummary(results) {
         return '';
     }
 
-    let summary = '### `@since` / deprecated version placeholder replacement\n\n';
-    summary += `Updated ${results.totalUpdated} \`@since\` or deprecated version placeholder`;
+    let summary = '### `@since` Tag Updates\n\n';
+    summary += `Updated ${results.totalUpdated} \`@since\` placeholder`;
     summary += results.totalUpdated === 1 ? '' : 's';
     summary += ' in the following files:\n\n';
+
+    // Debug logging
+    console.log(chalk.blue('\nGenerating summary for files:'));
+    console.log(results.updated);
 
     results.updated.forEach(({ file, count }) => {
         // Get the relative path from the project root
         const relativePath = path.relative(process.cwd(), file);
+        console.log(chalk.gray(`Processing file: ${file}`));
+        console.log(chalk.gray(`Relative path: ${relativePath}`));
         summary += `- \`${relativePath}\` (${count} update${count === 1 ? '' : 's'})\n`;
     });
 
@@ -154,6 +193,10 @@ function generateReleaseNotesSummary(results) {
             summary += `- Failed to update \`${relativePath}\`: ${error}\n`;
         });
     }
+
+    // Debug logging
+    console.log(chalk.blue('\nGenerated summary:'));
+    console.log(summary);
 
     return summary;
 }
