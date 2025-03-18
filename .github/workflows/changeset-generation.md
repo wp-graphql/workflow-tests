@@ -205,41 +205,65 @@ npm run release:notes
 
 ### Generating Changesets Locally
 
-You can generate changesets locally for previously merged PRs using the `generate-changeset.js` script directly:
+You can generate changesets locally for previously merged PRs using either the npm script or the Node.js script directly:
 
 ```bash
-# Basic usage
-node scripts/generate-changeset.js --pr=123 --title="feat: Add new feature" --author="username"
+# Using the npm script (note the -- before the arguments)
+npm run changeset:generate -- --pr=123 --title="feat: Add new feature" --author="username"
 
 # With a detailed body
-node scripts/generate-changeset.js \
+npm run changeset:generate -- \
   --pr=123 \
   --title="feat: Add new feature" \
   --author="username" \
   --body="Detailed description of the changes"
 
 # For a breaking change
-node scripts/generate-changeset.js \
+npm run changeset:generate -- \
   --pr=123 \
   --title="feat!: Breaking change" \
   --author="username" \
   --breaking=true
+
+# Or using Node directly
+node scripts/generate-changeset.js \
+  --pr=123 \
+  --title="feat: Add new feature" \
+  --author="username"
 ```
 
 You can also use the GitHub API to fetch PR information automatically:
 
 ```bash
+# Set your GitHub token
+export GITHUB_TOKEN="your_token_here"
+
 # Fetch PR info and generate changeset
 PR_NUMBER=123
 PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/OWNER/REPO/pulls/$PR_NUMBER")
+  "https://api.github.com/repos/$OWNER/$REPO/pulls/$PR_NUMBER")
 
+# Using npm script
+npm run changeset:generate -- \
+  --pr="$PR_NUMBER" \
+  --title="$(echo "$PR_DATA" | jq -r '.title')" \
+  --author="$(echo "$PR_DATA" | jq -r '.user.login')" \
+  --body="$(echo "$PR_DATA" | jq -r '.body')"
+
+# Or using Node directly
 node scripts/generate-changeset.js \
   --pr="$PR_NUMBER" \
   --title="$(echo "$PR_DATA" | jq -r '.title')" \
   --author="$(echo "$PR_DATA" | jq -r '.user.login')" \
   --body="$(echo "$PR_DATA" | jq -r '.body')"
 ```
+
+Available options:
+- `--pr`: (required) The PR number
+- `--title`: (required) The PR title
+- `--author`: (required) The PR author's username
+- `--body`: (optional) The PR description
+- `--breaking`: (optional) Whether this is a breaking change [default: false]
 
 After generating the changeset:
 1. Commit the new changeset file in the `.changesets` directory
