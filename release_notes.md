@@ -3,10 +3,10 @@
 
 ## Changelog
 
-**Bump Type:** minor
+**Bump Type:** major
 
-### ✨ New Features
-- feat: test since tag replacement again ([#9](https://github.com/wp-graphql/workflow-tests/pull/9))
+### ⚠️ BREAKING CHANGES
+- feat!: test since tags 3 ([#11](https://github.com/wp-graphql/workflow-tests/pull/11))
 
 ### 👏 Contributors
 
@@ -14,8 +14,8 @@ Thanks to the following contributors for making this release possible:
 
 - [@jasonbahl](https://github.com/jasonbahl)
 
-### Since Tag Updates
+###  / deprecated version placeholder replacement
 
-Updated 3 @since placeholders in the following files:
+Updated 3  or deprecated version placeholders in the following files:
 
 -  (3 updates)

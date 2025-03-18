@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v5.0.0 - 2025-03-18
+
+> ⚠️ **BREAKING CHANGES**: This release contains breaking changes. Please review before upgrading.
+
+### Breaking Changes
+
+- feat!: test since tags 3 ([#11](https://github.com/jasonbahl/automation-tests/pull/11))
+
 ## v4.4.0 - 2025-03-18
 
 ### New Features
