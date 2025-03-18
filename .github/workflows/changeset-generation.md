@@ -10,10 +10,38 @@ This workflow automatically generates changesets for pull requests. Changesets a
 
 The workflow is triggered by:
 
-1. When a pull request is labeled with 'ready-for-changeset'
+1. When a pull request is merged to the `develop` branch
 2. Manually via the GitHub Actions UI using the workflow_dispatch event
    - Go to Actions > Generate Changeset > Run workflow
    - Enter the PR number and click "Run workflow"
+   - This can be used to generate changesets for:
+     - PRs that were merged before the workflow was implemented
+     - PRs where the workflow was skipped or failed
+     - PRs that need their changeset regenerated
+
+The workflow will:
+- Fetch the PR information using the GitHub API
+- Generate a changeset based on the PR title, body, and author
+- Commit the changeset to the develop branch
+- Update or create a release PR if needed
+
+### Manual Trigger Usage
+
+To manually generate a changeset for a PR:
+
+1. Go to the Actions tab in your repository
+2. Click on the "Generate Changeset" workflow
+3. Click "Run workflow"
+4. Enter the PR number in the input field
+5. Click "Run workflow"
+
+The workflow will:
+- Validate that the PR exists
+- Extract all necessary information from the PR
+- Generate and commit the changeset
+- Update or create a release PR
+
+If the PR doesn't exist or can't be accessed, the workflow will fail with an appropriate error message.
 
 ## Implementation Options
 
@@ -56,12 +84,14 @@ Breaking changes are detected by:
 
 ## Workflow Steps
 
-1. **Detect PR Merge**: The workflow runs when a PR is merged or when manually triggered.
-2. **Extract Metadata**: The workflow extracts relevant information from the PR, including title, author, and body.
-3. **Generate Changeset**: A changeset file is created with the extracted metadata.
-4. **Commit Changeset**: The changeset is committed to the branch (typically `develop`).
-5. **Generate Release Notes**: The `release:notes` script processes all changesets to create formatted release notes in a temporary file.
-6. **Update/Create Release PR**: The workflow either updates an existing release PR or creates a new one with the generated release notes.
+1. **Debug Event Information**: The workflow first logs important event details for debugging purposes
+2. **Generate Changeset**: The main job runs when a PR is merged or manually triggered, and:
+   - Checks out the code
+   - Sets up Node.js
+   - Installs dependencies
+   - Extracts PR information
+   - Generates and commits the changeset
+   - Updates or creates a release PR
 
 ## Release Notes Generation
 
@@ -108,17 +138,31 @@ name: Generate Changeset
 on:
   pull_request_target:
     types: [closed]
+    branches:
+      - develop
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Pull Request Number'
+        description: 'PR number to generate changeset for'
         required: true
         type: string
 
 jobs:
-  generate-changeset:
-    if: (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
+  debug-event:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+      - name: Debug Event
+        run: |
+          echo "Event details..."
+
+  generate-changeset:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs: [debug-event]
+    if: (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     env:
       REPO_URL: "https://github.com/${{ github.repository }}"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -126,11 +170,9 @@ jobs:
       # Checkout code
       # Setup Node.js
       # Install dependencies
-      # Get PR details
+      # Extract PR information
       # Generate changeset
-      # Commit changeset
-      # Generate release notes to temporary file
-      # Check for existing release PR
+      # Generate release notes
       # Update/Create release PR
 ```
 
@@ -146,8 +188,12 @@ This approach keeps the repository clean while still allowing the workflow to pr
 
 ## Prerequisites
 
-1. Create a 'ready-for-changeset' label in your repository
-2. Set up a Personal Access Token (PAT) with the "repo" scope as a repository secret named `REPO_PAT`
+The workflow uses the default `GITHUB_TOKEN` secret provided by GitHub Actions, which has the necessary permissions to:
+- Read repository contents
+- Create and update pull requests
+- Commit changes to branches
+
+No additional secrets or tokens need to be configured.
 
 ## Local Testing
 
