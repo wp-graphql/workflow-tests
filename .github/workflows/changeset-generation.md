@@ -203,6 +203,51 @@ You can test the release notes generation locally by running:
 npm run release:notes
 ```
 
+### Generating Changesets Locally
+
+You can generate changesets locally for previously merged PRs using the `generate-changeset.js` script directly:
+
+```bash
+# Basic usage
+node scripts/generate-changeset.js --pr=123 --title="feat: Add new feature" --author="username"
+
+# With a detailed body
+node scripts/generate-changeset.js \
+  --pr=123 \
+  --title="feat: Add new feature" \
+  --author="username" \
+  --body="Detailed description of the changes"
+
+# For a breaking change
+node scripts/generate-changeset.js \
+  --pr=123 \
+  --title="feat!: Breaking change" \
+  --author="username" \
+  --breaking=true
+```
+
+You can also use the GitHub API to fetch PR information automatically:
+
+```bash
+# Fetch PR info and generate changeset
+PR_NUMBER=123
+PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  "https://api.github.com/repos/OWNER/REPO/pulls/$PR_NUMBER")
+
+node scripts/generate-changeset.js \
+  --pr="$PR_NUMBER" \
+  --title="$(echo "$PR_DATA" | jq -r '.title')" \
+  --author="$(echo "$PR_DATA" | jq -r '.user.login')" \
+  --body="$(echo "$PR_DATA" | jq -r '.body')"
+```
+
+After generating the changeset:
+1. Commit the new changeset file in the `.changesets` directory
+2. Push the changes to the develop branch
+3. The workflow will automatically update or create a release PR
+
+### Other Local Testing Options
+
 For JSON output (used in PR descriptions):
 
 ```bash
