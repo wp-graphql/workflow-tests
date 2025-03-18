@@ -1,6 +1,6 @@
 {
   "name": "automation-tests",
-  "version": "5.2.0",
+  "version": "6.0.0",
   "description": "A plugin to test automation workflows",
   "main": "index.js",
   "scripts": {
