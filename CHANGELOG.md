@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v6.0.0 - 2025-03-18
+
+> ⚠️ **BREAKING CHANGES**: This release contains breaking changes. Please review before upgrading.
+
+### Breaking Changes
+
+- feat!: remove deprecated functions ([#26](https://github.com/jasonbahl/automation-tests/pull/26))
+
 ## v5.2.0 - 2025-03-18
 
 ### New Features
