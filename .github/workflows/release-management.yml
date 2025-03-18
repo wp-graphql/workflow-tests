@@ -132,85 +132,52 @@ jobs:
           mkdir -p /tmp/release-notes
           chmod 777 /tmp/release-notes
           
+          # Initialize release notes content
+          RELEASE_NOTES="## Release Notes"
+          RELEASE_NOTES="${RELEASE_NOTES}"$'\n\n'
+          
           # Check if this is a PR from develop to main
           if [[ "${{ github.event_name }}" == "pull_request_target" && "${{ github.event.pull_request.head.ref }}" == "develop" ]]; then
-            # Extract release notes from the PR body
-            PR_BODY="${{ github.event.pull_request.body }}"
-            
-            # Extract the content between "## Upcoming Changes" and the disclaimer
-            RELEASE_NOTES=$(echo "$PR_BODY" | sed -n '/## Upcoming Changes/,/This PR contains all changes/p' | sed '1d;$d')
-            
-            # Save to file for use in later steps (in temporary directory)
-            echo "$RELEASE_NOTES" > /tmp/release-notes/release_notes.md
+            # Get the PR body content between markers using grep and sed
+            PR_CONTENT=$(echo '${{ github.event.pull_request.body }}' | sed -n '/^## Changelog/,/^This PR contains all changes/p' | sed '$ d')
+            RELEASE_NOTES="${RELEASE_NOTES}${PR_CONTENT}"
           else
             # Generate release notes in markdown format for release body
-            # Skip the npm command output by redirecting stderr to /dev/null and grep out the command line
-            npm run release:notes 2>/dev/null | grep -v "^>" > /tmp/release-notes/release_notes.md
+            GENERATED_NOTES=$(npm run release:notes 2>/dev/null | grep -v "^>")
+            RELEASE_NOTES="${RELEASE_NOTES}${GENERATED_NOTES}"
           fi
           
           # Add @since updates section if there are any
           if [[ "${{ steps.update_since_tags.outputs.has_updates }}" == "true" ]]; then
-            # Read the summary from the previous step's output
-            SINCE_SUMMARY='${{ steps.update_since_tags.outputs.summary }}'
-            echo "" >> /tmp/release-notes/release_notes.md
-            echo "$SINCE_SUMMARY" >> /tmp/release-notes/release_notes.md
+            RELEASE_NOTES="${RELEASE_NOTES}"$'\n\n'
+            RELEASE_NOTES="${RELEASE_NOTES}${{ steps.update_since_tags.outputs.summary }}"
           fi
           
-          # Check if the file has content
-          if [ ! -s /tmp/release-notes/release_notes.md ]; then
-            # If empty, provide a more informative default message
-            echo "## Release Notes" > /tmp/release-notes/release_notes.md
-            echo "" >> /tmp/release-notes/release_notes.md
-            
+          # If no content was added, provide default message
+          if [[ "${RELEASE_NOTES}" == "## Release Notes"$'\n\n' ]]; then
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-              echo "This release was manually triggered with version bump type: ${{ github.event.inputs.release_type || 'auto' }}" >> /tmp/release-notes/release_notes.md
+              RELEASE_NOTES="${RELEASE_NOTES}This release was manually triggered with version bump type: ${{ github.event.inputs.release_type || 'auto' }}"
             elif [[ "${{ github.event_name }}" == "schedule" ]]; then
-              echo "This is a scheduled release." >> /tmp/release-notes/release_notes.md
+              RELEASE_NOTES="${RELEASE_NOTES}This is a scheduled release."
             else
-              echo "This release was triggered by merging a PR from develop to main." >> /tmp/release-notes/release_notes.md
+              RELEASE_NOTES="${RELEASE_NOTES}This release was triggered by merging a PR from develop to main."
             fi
             
-            echo "" >> /tmp/release-notes/release_notes.md
-            echo "No changesets were found for this release. This typically means:" >> /tmp/release-notes/release_notes.md
-            echo "- No features, fixes, or breaking changes were added, or" >> /tmp/release-notes/release_notes.md
-            echo "- The changes made did not require a changeset" >> /tmp/release-notes/release_notes.md
-          else
-            # If there is content, replace "Upcoming Changes" with "Release Notes" if present
-            sed -i 's/## Upcoming Changes/## Release Notes/g' /tmp/release-notes/release_notes.md
-            
-            # Remove the note about PR updates if present
-            sed -i '/This PR contains all changes that will be included in the next release/d' /tmp/release-notes/release_notes.md
+            RELEASE_NOTES="${RELEASE_NOTES}"$'\n\n'
+            RELEASE_NOTES="${RELEASE_NOTES}No changesets were found for this release. This typically means:"$'\n'
+            RELEASE_NOTES="${RELEASE_NOTES}- No features, fixes, or breaking changes were added, or"$'\n'
+            RELEASE_NOTES="${RELEASE_NOTES}- The changes made did not require a changeset"
           fi
+          
+          # Save the release notes to a file
+          echo "$RELEASE_NOTES" > $GITHUB_WORKSPACE/release_notes.md
           
           # For debugging
           echo "Generated release notes:"
-          cat /tmp/release-notes/release_notes.md
+          cat $GITHUB_WORKSPACE/release_notes.md
           
-          # Set the content for GitHub Actions output
-          # Properly escape the content for GitHub Actions
-          RELEASE_NOTES=$(cat /tmp/release-notes/release_notes.md)
-          
-          # First escape GitHub Actions special characters
-          RELEASE_NOTES="${RELEASE_NOTES//'%'/'%25'}"
-          RELEASE_NOTES="${RELEASE_NOTES//$'\r'/'%0D'}"
-          
-          # Then handle newlines last to prevent double-escaping
-          RELEASE_NOTES="${RELEASE_NOTES//$'\n'/'%0A'}"
-          
-          echo "content<<EOF" >> $GITHUB_OUTPUT
-          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          
-          # Ensure the temporary directory and files are readable by subsequent steps
-          chmod -R 755 /tmp/release-notes
-          
-          # List the contents of the directory to verify the file exists
-          echo "Verifying release notes file exists:"
-          ls -la /tmp/release-notes/
-          
-          # Copy the release notes to a more permanent location in the workspace
-          # This ensures it's available even if the temporary directory is cleaned up
-          cp /tmp/release-notes/release_notes.md $GITHUB_WORKSPACE/release_notes.md
+          # Set the content for GitHub Actions output using jq to properly escape the content
+          echo "content=$(echo "$RELEASE_NOTES" | jq -Rsa .)" >> $GITHUB_OUTPUT
           
       - name: Commit changes to main
         if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch'
