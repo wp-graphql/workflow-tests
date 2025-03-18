@@ -124,6 +124,26 @@ jobs:
           # For debugging
           echo "Generated release notes:"
           cat /tmp/release-notes/temp_notes.md
+
+      - name: Check for pending @since and deprecated version updates
+        id: check_since
+        run: |
+          # Get the next version from package.json
+          NEXT_VERSION=$(node -p "require('./package.json').version")
+          
+          # Run the since-tags script in dry-run mode to check for @since and deprecated version placeholders
+          node scripts/update-since-tags.js "$NEXT_VERSION" --dry-run || true
+          
+          # If the summary file exists, read it
+          if [ -f "/tmp/since-tags-summary.md" ]; then
+            SINCE_SUMMARY=$(cat /tmp/since-tags-summary.md)
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "summary<<EOF" >> $GITHUB_OUTPUT
+            echo "$SINCE_SUMMARY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
           
       - name: Check for existing release PR
         id: check_pr
@@ -159,6 +179,13 @@ jobs:
           PR_BODY="## Upcoming Changes"
           PR_BODY="${PR_BODY}"$'\n\n'
           PR_BODY="${PR_BODY}$(cat /tmp/release-notes/temp_notes.md)"
+          
+          # Add @since updates section if there are any
+          if [[ "${{ steps.check_since.outputs.has_updates }}" == "true" ]]; then
+            PR_BODY="${PR_BODY}"$'\n\n'
+            PR_BODY="${PR_BODY}${{ steps.check_since.outputs.summary }}"
+          fi
+          
           PR_BODY="${PR_BODY}"$'\n\n'
           PR_BODY="${PR_BODY}This PR contains all changes that will be included in the next release. It is automatically updated when new changesets are added to the develop branch."
           
@@ -190,6 +217,13 @@ jobs:
           PR_BODY="## Upcoming Changes"
           PR_BODY="${PR_BODY}"$'\n\n'
           PR_BODY="${PR_BODY}$(cat /tmp/release-notes/temp_notes.md)"
+          
+          # Add @since updates section if there are any
+          if [[ "${{ steps.check_since.outputs.has_updates }}" == "true" ]]; then
+            PR_BODY="${PR_BODY}"$'\n\n'
+            PR_BODY="${PR_BODY}${{ steps.check_since.outputs.summary }}"
+          fi
+          
           PR_BODY="${PR_BODY}"$'\n\n'
           PR_BODY="${PR_BODY}This PR contains all changes that will be included in the next release. It is automatically updated when new changesets are added to the develop branch."
           

@@ -4,11 +4,11 @@ const { glob } = require('glob');
 const chalk = require('chalk');
 
 /**
- * Find files containing @since todo tags
+ * Find files containing @since and deprecated version placeholder tags
  */
 async function findSinceTodoFiles(pattern = '**/*.php') {
     try {
-        console.log(chalk.blue('\nScanning for @since placeholder tags...'));
+        console.log(chalk.blue('\nScanning for `@since` and deprecated version placeholder tags...'));
         
         // Define specific directories to scan
         const includePaths = [
@@ -67,7 +67,7 @@ async function findSinceTodoFiles(pattern = '**/*.php') {
 }
 
 /**
- * Get all @since placeholders from a file
+ * Get all @since and deprecated version placeholders from a file
  */
 function getSincePlaceholders(content) {
     // Look for both @since placeholders and standalone @next-version
@@ -81,9 +81,9 @@ function getSincePlaceholders(content) {
 }
 
 /**
- * Update @since placeholders in a file
+ * Update @since and deprecated version placeholders in a file
  */
-function updateSinceTags(filePath, version) {
+function updateSinceTags(filePath, version, dryRun = false) {
     try {
         let content = fs.readFileSync(filePath, 'utf8');
         const originalContent = content;
@@ -91,6 +91,11 @@ function updateSinceTags(filePath, version) {
 
         if (placeholderCount === 0) {
             return { updated: false, count: 0 };
+        }
+
+        if (dryRun) {
+            // In dry run mode, just return what would be updated
+            return { updated: true, count: placeholderCount };
         }
 
         // First replace @since placeholders
@@ -117,9 +122,9 @@ function updateSinceTags(filePath, version) {
 }
 
 /**
- * Update all @since todo tags in the project
+ * Update all @since and deprecated version placeholder tags in the project
  */
-async function updateAllSinceTags(version, pattern = '**/*.php') {
+async function updateAllSinceTags(version, pattern = '**/*.php', dryRun = false) {
     const results = {
         updated: [],
         errors: [],
@@ -143,36 +148,39 @@ async function updateAllSinceTags(version, pattern = '**/*.php') {
 
         for (const file of files) {
             try {
-                const { updated, count } = updateSinceTags(file, version);
+                const { updated, count } = updateSinceTags(file, version, dryRun);
                 if (updated) {
-                    console.log(chalk.gray(`File updated: ${file} (${count} updates)`));
+                    console.log(chalk.gray(`${dryRun ? 'Will update' : 'File updated'}: ${file} (${count} update${count === 1 ? '' : 's'})`));
                     results.updated.push({ file, count });
                     results.totalUpdated += count;
                 }
             } catch (error) {
-                console.error(chalk.red(`Error updating ${file}:`, error.message));
+                console.error(chalk.red(`Error ${dryRun ? 'checking' : 'updating'} ${file}:`, error.message));
                 results.errors.push({ file, error: error.message });
             }
         }
 
         return results;
     } catch (error) {
-        throw new Error(`Error updating @since tags: ${error.message}`);
+        throw new Error(`Error ${dryRun ? 'checking' : 'updating'} version placeholders: ${error.message}`);
     }
 }
 
 /**
  * Generate a summary for release notes
  */
-function generateReleaseNotesSummary(results) {
+function generateReleaseNotesSummary(results, isDryRun = false) {
     if (results.totalUpdated === 0) {
         return '';
     }
 
-    let summary = '### `@since` Tag Updates\n\n';
-    summary += `Updated ${results.totalUpdated} \`@since\` placeholder`;
-    summary += results.totalUpdated === 1 ? '' : 's';
-    summary += ' in the following files:\n\n';
+    let summary = isDryRun ? 
+        '### 🔄 Pending `@since` Tag / Deprecation Updates\n\n' :
+        '### `@since` Tag / Deprecation Updates\n\n';
+
+    summary += isDryRun ?
+        `The following ${results.totalUpdated} version placeholder${results.totalUpdated === 1 ? '' : 's'} will be updated during release:\n\n` :
+        `Updated ${results.totalUpdated} version placeholder${results.totalUpdated === 1 ? '' : 's'} in the following files:\n\n`;
 
     // Debug logging
     console.log(chalk.blue('\nGenerating summary for files:'));
@@ -190,7 +198,7 @@ function generateReleaseNotesSummary(results) {
         summary += '\n#### Errors\n\n';
         results.errors.forEach(({ file, error }) => {
             const relativePath = path.relative(process.cwd(), file);
-            summary += `- Failed to update \`${relativePath}\`: ${error}\n`;
+            summary += `- Failed to ${isDryRun ? 'check' : 'update'} \`${relativePath}\`: ${error}\n`;
         });
     }
 
@@ -202,26 +210,28 @@ function generateReleaseNotesSummary(results) {
 }
 
 /**
- * CLI command to update @since tags
+ * CLI command to update @since and deprecated version placeholder tags
  */
 async function main() {
     try {
         const version = process.argv[2];
+        const dryRun = process.argv.includes('--dry-run');
+
         if (!version) {
             throw new Error('Version argument is required');
         }
 
-        console.log(chalk.blue('\nUpdating @since placeholder tags...'));
-        const results = await updateAllSinceTags(version);
+        console.log(chalk.blue(`\n${dryRun ? 'Checking' : 'Updating'} @since and deprecated version placeholders...`));
+        const results = await updateAllSinceTags(version, '**/*.php', dryRun);
 
         if (results.updated.length > 0) {
-            console.log(chalk.green('\n✓ Updated files:'));
+            console.log(chalk.green(`\n✓ ${dryRun ? 'Files to update' : 'Updated files'}:`));
             results.updated.forEach(({ file, count }) => {
                 console.log(chalk.gray(`  - ${path.relative(process.cwd(), file)} (${count} update${count === 1 ? '' : 's'})`));
             });
-            console.log(chalk.green(`\nTotal placeholders updated: ${results.totalUpdated}`));
+            console.log(chalk.green(`\nTotal placeholders ${dryRun ? 'to update' : 'updated'}: ${results.totalUpdated}`));
         } else {
-            console.log(chalk.yellow('\nNo @since placeholder tags found'));
+            console.log(chalk.yellow('\nNo @since or deprecated version placeholder tags found'));
         }
 
         if (results.errors.length > 0) {
@@ -233,7 +243,7 @@ async function main() {
         }
 
         // Generate release notes summary
-        const summary = generateReleaseNotesSummary(results);
+        const summary = generateReleaseNotesSummary(results, dryRun);
         if (summary) {
             // Save summary to a temporary file for the workflow to use
             const summaryPath = '/tmp/since-tags-summary.md';
