@@ -145,10 +145,12 @@ jobs:
             npm run release:notes 2>/dev/null | grep -v "^>" > /tmp/release-notes/release_notes.md
           fi
           
-          # Check if we have @since tag updates to append
+          # Add @since updates section if there are any
           if [[ "${{ steps.update_since_tags.outputs.has_updates }}" == "true" ]]; then
+            # Read the summary from the previous step's output
+            SINCE_SUMMARY='${{ steps.update_since_tags.outputs.summary }}'
             echo "" >> /tmp/release-notes/release_notes.md
-            echo "${{ steps.update_since_tags.outputs.summary }}" >> /tmp/release-notes/release_notes.md
+            echo "$SINCE_SUMMARY" >> /tmp/release-notes/release_notes.md
           fi
           
           # Check if the file has content
