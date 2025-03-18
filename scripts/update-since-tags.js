@@ -134,8 +134,8 @@ function generateReleaseNotesSummary(results) {
         return '';
     }
 
-    let summary = '### @since Tag Updates\n\n';
-    summary += `Updated ${results.totalUpdated} @since placeholder`;
+    let summary = '### Since Tag Updates\n\n';
+    summary += `Updated ${results.totalUpdated} \`@since\` placeholder`;
     summary += results.totalUpdated === 1 ? '' : 's';
     summary += ' in the following files:\n\n';
 
