@@ -6,18 +6,20 @@
  * Author: Jason Bahl
  */
 
+/**
+ * Added a missing docblock in @next-version
+ */ 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// add missing comment in @next-version
 require_once __DIR__ . '/constants.php';
 
 // show a message in the admin dashboard with the plugin name and version
 add_action( 'admin_notices', function() {
 	echo '<div class="notice notice-info"><p>🌮 Automation Tests v' . AUTOMATION_TESTS_VERSION . '</p></div>';
 });
-
-// New Feature 1
 
 /**
  * Testing a new feature with a since tag
@@ -56,5 +58,15 @@ function test_since_next_version_again_2() {
  * @deprecated 5.0.0 This function was deprecated when it was added because it was just a test.
  */
 function test_since_next_version_again_3() {
-  _deprecated_function( 'test_since_next_version_again_2', '5.0.0', '' )
+  _deprecated_function( 'test_since_next_version_again_3', '5.0.0', '' )
+}
+
+/**
+ * Testing a new feature with a since tag
+ * 
+ * @since todo
+ * @deprecated @next-version This function was deprecated when it was added because it was just a test.
+ */
+function test_since_next_version_again_4() {
+  _deprecated_function( 'test_since_next_version_again_4', '@next-version', '' )
 }
