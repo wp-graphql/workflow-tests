@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// add missing comment in @next-version
 require_once __DIR__ . '/constants.php';
 
 // show a message in the admin dashboard with the plugin name and version
