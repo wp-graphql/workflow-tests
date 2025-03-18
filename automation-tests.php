@@ -21,8 +21,6 @@ add_action( 'admin_notices', function() {
 	echo '<div class="notice notice-info"><p>🌮 Automation Tests v' . AUTOMATION_TESTS_VERSION . '</p></div>';
 });
 
-// New Feature 1
-
 /**
  * Testing a new feature with a since tag
  * 
