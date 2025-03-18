@@ -115,16 +115,7 @@ jobs:
             echo "has_updates=false" >> $GITHUB_OUTPUT
           fi
           
-      - name: Update changelogs
-        run: |
-          # First, check if this is a breaking change release by using our new script
-          # This will automatically update the upgrade notice section if breaking changes are found
-          npm run upgrade-notice:update -- --version=${{ steps.version_bump.outputs.version }} --notes-file=/tmp/release-notes/release_notes.md
-          
-          # Now update the changelogs as usual
-          npm run changelogs:update -- --version=${{ steps.version_bump.outputs.version }}
-          
-      # Generate release notes BEFORE archiving changesets
+      # Generate release notes BEFORE updating changelog or archiving changesets
       - name: Generate release notes
         id: release_notes
         run: |
@@ -144,7 +135,9 @@ jobs:
           else
             # Generate release notes in markdown format for release body
             GENERATED_NOTES=$(npm run release:notes 2>/dev/null | grep -v "^>")
-            RELEASE_NOTES="${RELEASE_NOTES}${GENERATED_NOTES}"
+            if [[ -n "$GENERATED_NOTES" ]]; then
+              RELEASE_NOTES="${RELEASE_NOTES}${GENERATED_NOTES}"
+            fi
           fi
           
           # Add @since updates section if there are any
@@ -155,7 +148,7 @@ jobs:
             RELEASE_NOTES="${RELEASE_NOTES}${SINCE_SUMMARY}"
           fi
           
-          # If no content was added, provide default message
+          # If no content was added (after all attempts), provide default message
           if [[ "${RELEASE_NOTES}" == "## Release Notes"$'\n\n' ]]; then
             if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
               RELEASE_NOTES="${RELEASE_NOTES}This release was manually triggered with version bump type: ${{ github.event.inputs.release_type || 'auto' }}"
@@ -171,7 +164,7 @@ jobs:
             RELEASE_NOTES="${RELEASE_NOTES}- The changes made did not require a changeset"
           fi
           
-          # Save the release notes to a file
+          # Save the release notes to a file that will be used by both the changelog update and release creation
           echo "$RELEASE_NOTES" > "$GITHUB_WORKSPACE/release_notes.md"
           
           # For debugging
@@ -180,6 +173,15 @@ jobs:
           
           # Set the content for GitHub Actions output using jq to properly escape the content
           echo "content=$(echo "$RELEASE_NOTES" | jq -Rsa .)" >> $GITHUB_OUTPUT
+          
+      - name: Update changelogs
+        run: |
+          # First, check if this is a breaking change release by using our new script
+          # This will automatically update the upgrade notice section if breaking changes are found
+          npm run upgrade-notice:update -- --version=${{ steps.version_bump.outputs.version }} --notes-file="$GITHUB_WORKSPACE/release_notes.md"
+          
+          # Now update the changelogs using the same release notes
+          npm run changelogs:update -- --version=${{ steps.version_bump.outputs.version }} --notes-file="$GITHUB_WORKSPACE/release_notes.md"
           
       - name: Commit changes to main
         if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch'
