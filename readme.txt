@@ -3,7 +3,7 @@ Contributors: jasonbahl
 Tags: testing, automation
 Requires at least: 5.0
 Tested up to: 6.2
-Stable tag: 5.0.0
+Stable tag: 5.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,14 +26,6 @@ This is a test repository for experimenting with GitHub Workflows for WordPress 
 This plugin is a testing ground for GitHub Actions workflows before implementing them in production repositories.
 
 == Upgrade Notice ==
-
-= 5.0.0 =
-
-**⚠️ BREAKING CHANGES**: This release contains breaking changes that may require updates to your code.
-
-* feat!: test since tags 3 (https://github.com/jasonbahl/automation-tests/pull/11)
-
-Please review these changes before upgrading.
 
 = 0.2.1 =
 
@@ -70,13 +62,26 @@ Please review these changes before upgrading.
 
 == Changelog ==
 
+= 5.1.0 =
+
+**New Features**
+
+* feat: test updates to another file (https://github.com/jasonbahl/automation-tests/pull/15)
+
+**Bug Fixes**
+
+* fix: cleanup (https://github.com/jasonbahl/automation-tests/pull/18)
+* fix: add missing comment (https://github.com/jasonbahl/automation-tests/pull/17)
+* fix: add missing docblock (https://github.com/jasonbahl/automation-tests/pull/16)
+* fix: test since version replacement (https://github.com/jasonbahl/automation-tests/pull/13)
+
 = 5.0.0 =
 
-**⚠️ BREAKING CHANGES**: This release contains breaking changes. Please review before upgrading.
-
-**Breaking Changes**
+**⚠️ BREAKING CHANGES**: This release contains breaking changes that may require updates to your code.
 
 * feat!: test since tags 3 (https://github.com/jasonbahl/automation-tests/pull/11)
+
+Please review these changes before upgrading.
 
 = 4.4.0 =
 

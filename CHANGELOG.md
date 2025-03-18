@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## v5.1.0 - 2025-03-18
+
+### New Features
+
+- feat: test updates to another file ([#15](https://github.com/jasonbahl/automation-tests/pull/15))
+
+### Bug Fixes
+
+- fix: cleanup ([#18](https://github.com/jasonbahl/automation-tests/pull/18))
+- fix: add missing comment ([#17](https://github.com/jasonbahl/automation-tests/pull/17))
+- fix: add missing docblock ([#16](https://github.com/jasonbahl/automation-tests/pull/16))
+- fix: test since version replacement ([#13](https://github.com/jasonbahl/automation-tests/pull/13))
+
 ## v5.0.0 - 2025-03-18
 
 > ⚠️ **BREAKING CHANGES**: This release contains breaking changes. Please review before upgrading.
