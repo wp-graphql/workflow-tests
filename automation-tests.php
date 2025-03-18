@@ -4,6 +4,7 @@
  * Description: A plugin to test automation workflows. Updating description in @next-version
  * Version: 5.1.0
  * Author: Jason Bahl
+ * Tested up to: 6.2
  */
 
 /**
@@ -70,3 +71,5 @@ function test_since_next_version_again_3() {
 function test_since_next_version_again_4() {
   _deprecated_function( 'test_since_next_version_again_4', '5.1.0', '' )
 }
+
+
