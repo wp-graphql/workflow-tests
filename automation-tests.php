@@ -29,3 +29,12 @@ function test_since_next_version() {
   _deprecated_function( 'test_since_next_version', '@since 4.2.0', '' )
 }
 
+/**
+ * Testing a new feature with a since tag
+ * 
+ * @since todo
+ * @deprecated @next-version This function was deprecated when it was added because it was just a test.
+ */
+function test_since_next_version_again() {
+  _deprecated_function( 'test_since_next_version_again', '@next-version', '' )
+}
