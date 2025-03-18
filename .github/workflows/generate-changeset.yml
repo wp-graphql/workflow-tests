@@ -175,29 +175,22 @@ jobs:
           
           PR_TITLE=$(echo "$PR_DATA" | jq -r '.title')
           
-          # Create the PR body using heredoc to preserve special characters
-          cat > /tmp/pr_body.md << 'EOL'
-          ## Upcoming Changes
-
-          $(cat /tmp/release-notes/temp_notes.md)
-          EOL
-
-          # Add @since updates section if there are any, using printf to handle special characters
+          # Create the PR body with proper formatting
+          PR_BODY="## Upcoming Changes"
+          PR_BODY="${PR_BODY}"$'\n\n'
+          PR_BODY="${PR_BODY}$(cat /tmp/release-notes/temp_notes.md)"
+          
+          # Add @since updates section if there are any
           if [[ "${{ steps.check_since.outputs.has_updates }}" == "true" ]]; then
-            printf "\n\n%s\n" "${{ steps.check_since.outputs.summary }}" >> /tmp/pr_body.md
+            PR_BODY="${PR_BODY}"$'\n\n'
+            PR_BODY="${PR_BODY}${{ steps.check_since.outputs.summary }}"
           fi
           
-          # Add the footer
-          echo -e "\nThis PR contains all changes that will be included in the next release. It is automatically updated when new changesets are added to the develop branch." >> /tmp/pr_body.md
+          PR_BODY="${PR_BODY}"$'\n\n'
+          PR_BODY="${PR_BODY}This PR contains all changes that will be included in the next release. It is automatically updated when new changesets are added to the develop branch."
           
-          # Read the complete PR body and escape it for JSON
-          PR_BODY=$(cat /tmp/pr_body.md)
-          
-          # Use jq to properly escape the content for JSON
-          PAYLOAD=$(jq -n \
-            --arg body "$PR_BODY" \
-            --arg title "$PR_TITLE" \
-            '{body: $arg.body, title: $arg.title}')
+          # Use jq to properly escape the content
+          PAYLOAD=$(jq -n --arg body "$PR_BODY" --arg title "$PR_TITLE" '{body: $body, title: $title}')
           
           # For debugging
           echo "API Payload:"
@@ -220,31 +213,27 @@ jobs:
       - name: Create new release PR
         if: steps.check_pr.outputs.exists == 'false'
         run: |
-          # Create the PR body using heredoc to preserve special characters
-          cat > /tmp/pr_body.md << 'EOL'
-          ## Upcoming Changes
-
-          $(cat /tmp/release-notes/temp_notes.md)
-          EOL
-
-          # Add @since updates section if there are any, using printf to handle special characters
+          # Create the PR body with proper formatting
+          PR_BODY="## Upcoming Changes"
+          PR_BODY="${PR_BODY}"$'\n\n'
+          PR_BODY="${PR_BODY}$(cat /tmp/release-notes/temp_notes.md)"
+          
+          # Add @since updates section if there are any
           if [[ "${{ steps.check_since.outputs.has_updates }}" == "true" ]]; then
-            printf "\n\n%s\n" "${{ steps.check_since.outputs.summary }}" >> /tmp/pr_body.md
+            PR_BODY="${PR_BODY}"$'\n\n'
+            PR_BODY="${PR_BODY}${{ steps.check_since.outputs.summary }}"
           fi
           
-          # Add the footer
-          echo -e "\nThis PR contains all changes that will be included in the next release. It is automatically updated when new changesets are added to the develop branch." >> /tmp/pr_body.md
+          PR_BODY="${PR_BODY}"$'\n\n'
+          PR_BODY="${PR_BODY}This PR contains all changes that will be included in the next release. It is automatically updated when new changesets are added to the develop branch."
           
-          # Read the complete PR body and escape it for JSON
-          PR_BODY=$(cat /tmp/pr_body.md)
-          
-          # Use jq to properly escape the content for JSON
+          # Use jq to properly escape the content
           PAYLOAD=$(jq -n \
             --arg title "release: next version 📦" \
             --arg head "develop" \
             --arg base "main" \
             --arg body "$PR_BODY" \
-            '{title: $arg.title, head: $arg.head, base: $arg.base, body: $arg.body}')
+            '{title: $title, head: $head, base: $base, body: $body}')
           
           # For debugging
           echo "API Payload:"
