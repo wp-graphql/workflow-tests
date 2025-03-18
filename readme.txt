@@ -3,7 +3,7 @@ Contributors: jasonbahl
 Tags: testing, automation
 Requires at least: 5.0
 Tested up to: 6.2
-Stable tag: 4.4.0
+Stable tag: 5.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,6 +26,14 @@ This is a test repository for experimenting with GitHub Workflows for WordPress 
 This plugin is a testing ground for GitHub Actions workflows before implementing them in production repositories.
 
 == Upgrade Notice ==
+
+= 5.0.0 =
+
+**⚠️ BREAKING CHANGES**: This release contains breaking changes that may require updates to your code.
+
+* feat!: test since tags 3 (https://github.com/jasonbahl/automation-tests/pull/11)
+
+Please review these changes before upgrading.
 
 = 0.2.1 =
 
@@ -61,6 +69,14 @@ This plugin is a testing ground for GitHub Actions workflows before implementing
 * GitHub Workflows for automating release management 
 
 == Changelog ==
+
+= 5.0.0 =
+
+**⚠️ BREAKING CHANGES**: This release contains breaking changes. Please review before upgrading.
+
+**Breaking Changes**
+
+* feat!: test since tags 3 (https://github.com/jasonbahl/automation-tests/pull/11)
 
 = 4.4.0 =
 
