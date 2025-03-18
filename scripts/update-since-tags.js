@@ -174,9 +174,10 @@ function generateReleaseNotesSummary(results, isDryRun = false) {
         return '';
     }
 
+    // Only generate one section based on whether this is a dry run or not
     let summary = isDryRun ? 
-        '### 🔄 Pending `@since` Tag / Deprecation Updates\n\n' :
-        '### `@since` Tag / Deprecation Updates\n\n';
+        '### 🔄 Pending `@since` Tag / Deprecation Placeholder Updates\n\n' :
+        '### `@since` Tag / Deprecation Placeholder Updates\n\n';
 
     summary += isDryRun ?
         `The following ${results.totalUpdated} version placeholder${results.totalUpdated === 1 ? '' : 's'} will be updated during release:\n\n` :
@@ -191,14 +192,14 @@ function generateReleaseNotesSummary(results, isDryRun = false) {
         const relativePath = path.relative(process.cwd(), file);
         console.log(chalk.gray(`Processing file: ${file}`));
         console.log(chalk.gray(`Relative path: ${relativePath}`));
-        summary += `- \`${relativePath}\` (${count} update${count === 1 ? '' : 's'})\n`;
+        summary += `* \`${relativePath}\` (${count} update${count === 1 ? '' : 's'})\n`;
     });
 
     if (results.errors.length > 0) {
         summary += '\n#### Errors\n\n';
         results.errors.forEach(({ file, error }) => {
             const relativePath = path.relative(process.cwd(), file);
-            summary += `- Failed to ${isDryRun ? 'check' : 'update'} \`${relativePath}\`: ${error}\n`;
+            summary += `* Failed to ${isDryRun ? 'check' : 'update'} \`${relativePath}\`: ${error}\n`;
         });
     }
 

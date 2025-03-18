@@ -129,8 +129,20 @@ jobs:
           
           # Check if this is a PR from develop to main
           if [[ "${{ github.event_name }}" == "pull_request_target" && "${{ github.event.pull_request.head.ref }}" == "develop" ]]; then
-            # Get the PR body content between markers using grep and sed
-            PR_CONTENT=$(echo '${{ github.event.pull_request.body }}' | sed -n '/^## Changelog/,/^This PR contains all changes/p' | sed '$ d')
+            # Get the PR body content, carefully excluding the pending @since section
+            PR_CONTENT=$(echo '${{ github.event.pull_request.body }}' | awk '
+              BEGIN { p=0; in_since=0 }
+              /^## Changelog/ { p=1; print; next }
+              /^### 🔄 Pending `@since` Tag/ { in_since=1; next }
+              /^###/ && in_since { in_since=0 }  # Reset when we hit the next section
+              /^This PR contains all changes/ { p=0; next }
+              !in_since && p { print }
+            ')
+            
+            # For debugging
+            echo "Extracted PR content:"
+            echo "$PR_CONTENT"
+            
             RELEASE_NOTES="${RELEASE_NOTES}${PR_CONTENT}"
           else
             # Generate release notes in markdown format for release body
