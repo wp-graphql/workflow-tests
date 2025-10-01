@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Automation Tests
  * Description: A plugin to test automation workflows.
- * Version: 6.0.12
+ * Version: 6.0.13
  * Author: Jason Bahl
  * Tested up to: 6.2
  */
