@@ -1,6 +1,6 @@
 <?php
 
-define('AUTOMATION_TESTS_VERSION', '6.0.15');
+define('AUTOMATION_TESTS_VERSION', '6.0.16');
 define('AUTOMATION_TESTS_PLUGIN_NAME', 'automation-tests');
 
 /**
