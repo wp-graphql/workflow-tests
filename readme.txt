@@ -3,7 +3,7 @@ Contributors: jasonbahl
 Tags: testing, automation
 Requires at least: 5.0
 Tested up to: 6.2
-Stable tag: 6.0.19
+Stable tag: 6.0.20
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
